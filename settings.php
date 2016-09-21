@@ -4,13 +4,11 @@
 	 * admin Scripts and styles for plugin
 	 */
 	function funkstagram_admin_style() {
-		wp_register_style( 'funk_css', sp_pd() . '/css/funkstagram.admin.css' );
-		wp_register_script( 'tagit_js', sp_pd() . '/js/jquery.tagsinput.min.js' );
-		wp_register_script( 'funk_js', sp_pd() . '/js/funkstagram.admin.js' );
+		wp_register_style( 'sp2016_css', sp_pd() . '/css/sp2016.admin.css' );
+		wp_register_script( 'sp2016_js', sp_pd() . '/js/sp2016.admin.js' );
 		if ( is_admin() ) {
-			wp_enqueue_style( 'funk_css');
-			wp_enqueue_script( 'tagit_js');
-			wp_enqueue_script( 'funk_js');
+			wp_enqueue_style( 'sp2016_css');
+			wp_enqueue_script( 'sp2016_js');
 		}
 	}
 	// add_action( 'admin_init', 'funkstagram_admin_style' );
@@ -25,17 +23,20 @@
                 <table class="form-table">
                     <tbody>
                         <tr valign="top">
-                            <th scope="row"><label for="sp2016_twitter_key">Twitter Key:</label></th>
+                            <th scope="row"><label for="sp2016_twitter_key">Custom Token:</label></th>
                             <td>
-                                <input name="sp2016_twitter_key" type="text" title="Twitter Key" id="sp2016_twitter_key" value="<?php echo get_option('sp2016_twitter_key'); ?>">
-                                <!-- <p class="description"></p> -->
+                                <input name="sp2016_custom_token" type="text" title="Custom Token" id="sp2016_custom_token" value="<?php echo get_option('sp2016_custom_token'); ?>">
+                                <p class="description">Create a custom secure token. Any random string of ASCII characters.</p>
                             </td>
                         </tr>
                         <tr valign="top">
-                            <th scope="row"><label for="sp2016_twitter_secret">Twitter Secret:</label></th>
+                            <th scope="row"><label>Webhook URL:</label></th>
                             <td>
-                                <input name="sp2016_twitter_secret" type="text" title="Twitter Secret" id="sp2016_twitter_secret" value="<?php echo get_option('sp2016_twitter_secret'); ?>">
-                                <!-- <p class="description"></p> -->
+                                <?php if ( get_option('sp2016_custom_token') ): ?>
+                                    <code><?php echo site_url('/wp-admin/admin-ajax.php?action=import_social_post&token=' . get_option('sp2016_custom_token')); ?></code>
+                                <?php else: ?>
+                                    <p>You must first set a token.</p>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     </tbody>
@@ -51,8 +52,7 @@
 
     /* Save Takeover Settings */
     function sp2016_settings_init(){
-        register_setting('sp2016_settings', 'sp2016_twitter_key');
-        register_setting('sp2016_settings', 'sp2016_twitter_secret');
+        register_setting('sp2016_settings', 'sp2016_custom_token');
     }
     add_action('admin_init', 'sp2016_settings_init');
 

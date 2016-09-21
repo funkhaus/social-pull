@@ -104,7 +104,7 @@
         header('Content-Type: application/json');
 
         // check for token
-        if ( ! isset($_REQUEST['token']) || $_REQUEST['token'] !== 'iXMQwCQ9mu9oy' ){
+        if ( ! isset($_REQUEST['token']) || !get_option('sp2016_custom_token') || $_REQUEST['token'] !== get_option('sp2016_custom_token') ){
             echo json_encode(array( 'error' => 'Invalid authorization' ));
             exit;
         }
