@@ -167,11 +167,8 @@
                 $target_user = get_users(array('meta_key' => '_sp2016_twitter_handle', 'meta_value' => $user));
                 $target_user = reset($target_user);
 
-                // no user?
-                if ( ! $target_user ){
-                    echo json_encode(array( 'error' => 'Specified user does not exist' ));
-                    exit;
-                }
+                // no user? Default to null
+                $target_user_id = $target_user ? $target_user->ID ? null;
 
                 // set social media status and custom image
                 $meta_args['_custom_social_status'] = $type;
@@ -180,7 +177,7 @@
                 $meta_args['_custom_original_url'] = $data_source['url'];
 
                 // set args for post
-                $args['post_author'] = $target_user->ID;
+                $args['post_author'] = $target_user_id;
                 $args['post_content'] = $data_source['text'];
                 $args['post_title'] = 'Tweet: ' . substr($data_source['text'], 0, 35) . '...';
                 $args['post_category'] = array($target_user->_sp2016_cat_id);
@@ -207,11 +204,8 @@
                 $target_user = get_users(array('meta_key' => '_sp2016_facebook_id', 'meta_value' => $data_source['from__id']));
                 $target_user = reset($target_user);
 
-                // no user?
-                if ( ! $target_user ){
-                    echo json_encode(array( 'error' => 'Specified user does not exist' ));
-                    exit;
-                }
+                // no user? Default to null
+                $target_user_id = $target_user ? $target_user->ID ? null;
 
                 // set social media status and custom image
                 $meta_args['_custom_social_status'] = $type;
@@ -219,7 +213,7 @@
                 $meta_args['_custom_external_url'] = $data_source['link'];
 
                 // set args for post
-                $args['post_author'] = $target_user->ID;
+                $args['post_author'] = $target_user_id;
                 $args['post_content'] = $data_source['message'];
                 $args['post_title'] = substr($data_source['message'], 0, 45) . '...';
                 $args['post_category'] = array($target_user->_sp2016_cat_id);
@@ -276,11 +270,8 @@
                 $target_user = get_users(array('meta_key' => '_sp2016_instagram_handle', 'meta_value' => $user));
                 $target_user = reset($target_user);
 
-                // no user?
-                if ( ! $target_user ){
-                    echo json_encode(array( 'error' => 'Specified user does not exist' ));
-                    exit;
-                }
+                // no user? Default to null
+                $target_user_id = $target_user ? $target_user->ID ? null;
 
                 // set social media status and custom image
                 $meta_args['_custom_social_status'] = $type;
@@ -288,7 +279,7 @@
                 $meta_args['_custom_external_url'] = $data_source['link'];
 
                 // set args for post
-                $args['post_author'] = $target_user->ID;
+                $args['post_author'] = $target_user_id;
                 $args['post_content'] = $data_source['caption'];
                 $args['post_title'] = 'Gram: ' . $data_source['id'];
                 $args['post_category'] = array($target_user->_sp2016_cat_id);
