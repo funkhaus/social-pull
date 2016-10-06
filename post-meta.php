@@ -60,6 +60,9 @@
         if( ! empty($_POST["_custom_image_url"]) ) {
 	        update_post_meta($post_id, "_custom_image_url", $_POST["_custom_image_url"]);
         }
+        if( ! empty($_POST["_custom_external_url"]) ) {
+            update_post_meta($post_id, "_custom_external_url", $_POST["_custom_external_url"]);
+        }
 
     }
     add_action('save_post', 'sp2016_save_metabox');
