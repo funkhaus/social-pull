@@ -177,6 +177,10 @@
 
                 // set args for post
                 $args['post_author'] = $target_user_id;
+
+                // find any text that looks like a link and wrap in HTML
+                $data_source['text'] = preg_replace( '/(http[^\s]*)/', '<a href="$1">$1</a>',$data_source['text'] );
+
                 $args['post_content'] = $data_source['text'];
                 $args['post_title'] = 'Tweet: ' . substr($data_source['text'], 0, 35) . '...';
                 $args['post_category'] = array($target_user->_sp2016_cat_id);
