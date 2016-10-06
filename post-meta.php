@@ -41,13 +41,6 @@
 
         	</div>
 
-        	<div class="custom-meta">
-				<label for="original-url">Original external URL for this post (can't change):</label>
-				<input id="original-url" class="short" title="" name="_custom_original_url" type="text" value="<?php echo $post->_custom_original_url; ?>" disabled>
-				<br/>
-
-        	</div>
-
 		<?php
 	}
 

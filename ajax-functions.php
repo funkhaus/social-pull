@@ -168,13 +168,12 @@
                 $target_user = reset($target_user);
 
                 // no user? Default to null
-                $target_user_id = $target_user ? $target_user->ID ? null;
+                $target_user_id = $target_user ? $target_user->ID : null;
 
                 // set social media status and custom image
                 $meta_args['_custom_social_status'] = $type;
                 $meta_args['_custom_image_url'] = $data_source['user__profile_image_url'];
                 $meta_args['_custom_external_url'] = $data_source['url'];
-                $meta_args['_custom_original_url'] = $data_source['url'];
 
                 // set args for post
                 $args['post_author'] = $target_user_id;
@@ -205,7 +204,7 @@
                 $target_user = reset($target_user);
 
                 // no user? Default to null
-                $target_user_id = $target_user ? $target_user->ID ? null;
+                $target_user_id = $target_user ? $target_user->ID : null;
 
                 // set social media status and custom image
                 $meta_args['_custom_social_status'] = $type;
@@ -271,7 +270,7 @@
                 $target_user = reset($target_user);
 
                 // no user? Default to null
-                $target_user_id = $target_user ? $target_user->ID ? null;
+                $target_user_id = $target_user ? $target_user->ID : null;
 
                 // set social media status and custom image
                 $meta_args['_custom_social_status'] = $type;
