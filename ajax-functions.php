@@ -168,7 +168,7 @@
                 $target_user = reset($target_user);
 
                 // no user? Default to null
-                $target_user_id = $target_user ? $target_user->ID ? null;
+                $target_user_id = $target_user ? $target_user->ID : null;
 
                 // set social media status and custom image
                 $meta_args['_custom_social_status'] = $type;
@@ -204,7 +204,7 @@
                 $target_user = reset($target_user);
 
                 // no user? Default to null
-                $target_user_id = $target_user ? $target_user->ID ? null;
+                $target_user_id = $target_user ? $target_user->ID : null;
 
                 // set social media status and custom image
                 $meta_args['_custom_social_status'] = $type;
@@ -270,7 +270,7 @@
                 $target_user = reset($target_user);
 
                 // no user? Default to null
-                $target_user_id = $target_user ? $target_user->ID ? null;
+                $target_user_id = $target_user ? $target_user->ID : null;
 
                 // set social media status and custom image
                 $meta_args['_custom_social_status'] = $type;
