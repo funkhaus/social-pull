@@ -179,7 +179,7 @@
                 $args['post_author'] = $target_user_id;
 
                 // find any text that looks like a link and wrap in HTML
-                $data_source['text'] = preg_replace( '/(http[^\s]*)/', '<a href="$1">$1</a>',$data_source['text'] );
+                $data_source['text'] = preg_replace( '/(http[^\s]*)/', '<a href="$1" target="_blank">$1</a>',$data_source['text'] );
 
                 $args['post_content'] = $data_source['text'];
                 $args['post_title'] = 'Tweet: ' . substr($data_source['text'], 0, 35) . '...';
