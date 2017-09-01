@@ -45,7 +45,7 @@
         // Get the file extension for the image
         $fileextension = image_type_to_extension( exif_imagetype( $url ) );
 
-        $url = trailingslashit(get_admin_url()) . 'admin-ajax.php?action=trim_image&url=' . urlencode($url);
+        // $url = trailingslashit(get_admin_url()) . 'admin-ajax.php?action=trim_image&url=' . urlencode($url);
 
         //download image from url
         $tmp = download_url( $url );
