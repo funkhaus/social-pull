@@ -28,65 +28,29 @@
 
 /*
  * The following code has been taken from
- * the media_handle_sideload() reference page
- * http://codex.wordpress.org/Function_Reference/media_handle_sideload
+ * the media_sideload_image() reference page
+ * https://codex.wordpress.org/Function_Reference/media_sideload_image
  *
- * Sets URL into a useable $_FILE array, and attaches it to page
  * @Returns image ID on success, or false on failure
  *
  */
     function sp_sideLoad($url, $post_id, $name = '') {
         if ( ! function_exists('download_url') ) {
-            require_once('wp-admin/includes/image.php');
-            require_once('wp-admin/includes/file.php');
-            require_once('wp-admin/includes/media.php');
+            require_once(ABSPATH . 'wp-admin/includes/image.php');
+            require_once(ABSPATH . 'wp-admin/includes/file.php');
+            require_once(ABSPATH . 'wp-admin/includes/media.php');
         }
-
-        // Get the file extension for the image
-        $fileextension = image_type_to_extension( exif_imagetype( $url ) );
-
-        // $url = trailingslashit(get_admin_url()) . 'admin-ajax.php?action=trim_image&url=' . urlencode($url);
-
-        //download image from url
-        $tmp = download_url( $url );
 
         // get name from file
         if ( empty($name) ){
             $name = basename( $url );
         }
 
-        // Take care of image files without extension:
-        $path = pathinfo( $tmp );
-        if( isset( $path['extension'] ) ):
-            $name = $name . $fileextension;
-        else:
-            $name = $name . $fileextension;
-            $tmp = $tmp . $fileextension;
-        endif;
-
-        // create file array
-        $file_array['name'] = $name;
-        $file_array['tmp_name'] = $tmp;
-        $mime_type = mime_content_type($tmp);
-
-        // if mime type set, add to file array
-        if ( $mime_type ){
-            $file_array['type'] = $mime_type;
-        }
-
-        // If error storing temporarily, delete
-        if ( is_wp_error( $tmp ) ) {
-            @unlink($file_array['tmp_name']);
-            $file_array['tmp_name'] = '';
-        }
-
-        // do the validation and storage stuff,
-        // Set ID
-        $id = media_handle_sideload( $file_array, $post_id );
+        // sideload image, return ID
+        $id = media_sideload_image($url, $post_id, '', 'id');
 
         // If error storing permanently, delete and return false
         if ( is_wp_error($id) ) {
-            @unlink($file_array['tmp_name']);
             return false;
         }
 
