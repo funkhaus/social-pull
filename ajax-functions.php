@@ -73,17 +73,16 @@
             exit;
         }
 
-        // get from form or JSON?
-        $data_source = $_POST;
+        // get JSON body
+        $data_source = json_decode(file_get_contents('php://input'), true);
 
-        // ---- TESTING TOOLS ----
-        // $data_source = json_decode(file_get_contents('php://input'), true);
-        // wp_mail( 'john@funkhaus.us', 'PB social gram pull', print_r(json_encode($data_source), true));
+        $is_instagram_poller = isset($data_source['source']) && $data_source['source'] == 'instagram_poller';
+        $is_instagram_native = isset($data_source['user']['username']) && isset($data_source['images']['standard_resolution']['url']);
 
         // detect data type
         $type = false;
         if ( isset($data_source['retweet_count']) ) $type = 'twitter';
-        if ( isset($data_source['user__username']) && isset($data_source['images__standard_resolution__height']) ) $type = 'instagram';
+        if ( $is_instagram_native || $is_instagram_poller ) $type = 'instagram';
         if ( isset($data_source['status_type']) ) $type = 'facebook';
 
         // any data in the request?
@@ -215,13 +214,13 @@
             case 'instagram' :
 
                 // validate params
-                if ( !isset($data_source['user__username']) || !isset($data_source['images__standard_resolution__url']) ){
+                if ( !isset($data_source['user']['username']) || !isset($data_source['images']['standard_resolution']['url']) ){
                     echo json_encode(array( 'error' => 'Must set user and image' ));
                     exit;
                 }
 
                 // set user
-                $user = strtolower( $data_source['user__username'] );
+                $user = strtolower( $data_source['user']['username'] );
 
                 // validate type
                 if ( !isset($data_source['type']) || $data_source['type'] !== 'image' ){
@@ -238,7 +237,7 @@
 
                 // set social media status and custom image
                 $meta_args['_custom_social_status'] = $type;
-                $meta_args['_custom_image_url'] = $data_source['images__standard_resolution__url'];
+                $meta_args['_custom_image_url'] = $data_source['images']['standard_resolution']['url'];
                 $meta_args['_custom_external_url'] = $data_source['link'];
 
                 // set args for post
@@ -249,7 +248,7 @@
                 $args['meta_input'] = $meta_args;
 
                 // if caption wasn't found, try a different key
-                if ( empty($args['post_content']) && isset($data_source['caption__text']) ) $args['post_content'] = $data_source['caption__text'];
+                if ( empty($args['post_content']) && isset($data_source['caption']) ) $args['post_content'] = $data_source['caption']['text'];
 
                 // create post
                 $success = wp_insert_post($args);
@@ -261,7 +260,7 @@
                     $created_post = get_post($success);
 
                     // sideload image into media library
-                    $image_id = sp_sideLoad($data_source['images__standard_resolution__url'], $success, $data_source['id']);
+                    $image_id = sp_sideLoad($data_source['images']['standard_resolution']['url'], $success, $data_source['id']);
 
                     // if image created successfully...
                     if ( $image_id ){
