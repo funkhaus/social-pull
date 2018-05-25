@@ -242,7 +242,7 @@
 
                 // set args for post
                 $args['post_author'] = $target_user_id;
-                $args['post_content'] = $data_source['caption'];
+                $args['post_content'] = $data_source['caption']['text'];
                 $args['post_title'] = 'Gram: ' . $data_source['id'];
                 $args['post_category'] = array($target_user->_sp2016_cat_id);
                 $args['meta_input'] = $meta_args;
