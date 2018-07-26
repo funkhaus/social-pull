@@ -28,29 +28,65 @@
 
 /*
  * The following code has been taken from
- * the media_sideload_image() reference page
- * https://codex.wordpress.org/Function_Reference/media_sideload_image
+ * the media_handle_sideload() reference page
+ * http://codex.wordpress.org/Function_Reference/media_handle_sideload
  *
+ * Sets URL into a useable $_FILE array, and attaches it to page
  * @Returns image ID on success, or false on failure
  *
  */
     function sp_sideLoad($url, $post_id, $name = '') {
         if ( ! function_exists('download_url') ) {
-            require_once(ABSPATH . 'wp-admin/includes/image.php');
-            require_once(ABSPATH . 'wp-admin/includes/file.php');
-            require_once(ABSPATH . 'wp-admin/includes/media.php');
+            require_once('wp-admin/includes/image.php');
+            require_once('wp-admin/includes/file.php');
+            require_once('wp-admin/includes/media.php');
         }
+
+        // Get the file extension for the image
+        $fileextension = image_type_to_extension( exif_imagetype( $url ) );
+
+        $url = trailingslashit(get_admin_url()) . 'admin-ajax.php?action=trim_image&url=' . urlencode($url);
+
+        //download image from url
+        $tmp = download_url( $url );
 
         // get name from file
         if ( empty($name) ){
             $name = basename( $url );
         }
 
-        // sideload image, return ID
-        $id = media_sideload_image($url, $post_id, '', 'id');
+        // Take care of image files without extension:
+        $path = pathinfo( $tmp );
+        if( isset( $path['extension'] ) ):
+            $name = $name . $fileextension;
+        else:
+            $name = $name . $fileextension;
+            $tmp = $tmp . $fileextension;
+        endif;
+
+        // create file array
+        $file_array['name'] = $name;
+        $file_array['tmp_name'] = $tmp;
+        $mime_type = mime_content_type($tmp);
+
+        // if mime type set, add to file array
+        if ( $mime_type ){
+            $file_array['type'] = $mime_type;
+        }
+
+        // If error storing temporarily, delete
+        if ( is_wp_error( $tmp ) ) {
+            @unlink($file_array['tmp_name']);
+            $file_array['tmp_name'] = '';
+        }
+
+        // do the validation and storage stuff,
+        // Set ID
+        $id = media_handle_sideload( $file_array, $post_id );
 
         // If error storing permanently, delete and return false
         if ( is_wp_error($id) ) {
+            @unlink($file_array['tmp_name']);
             return false;
         }
 
@@ -68,13 +104,18 @@
         header('Content-Type: application/json');
 
         // check for token
-        if ( ! isset($_REQUEST['token']) || !get_option('sp2016_custom_token') || $_REQUEST['token'] !== get_option('sp2016_custom_token') ){
+        if ( ! isset($_REQUEST['token']) || $_REQUEST['token'] !== 'iXMQwCQ9mu9oy' ){
             echo json_encode(array( 'error' => 'Invalid authorization' ));
             exit;
         }
 
-        // get JSON body
         $data_source = json_decode(file_get_contents('php://input'), true);
+        if ( empty($data_source) ){
+            $data_source = $_POST;
+        }
+
+        // ---- TESTING TOOLS ----
+        // wp_mail( 'john@funkhaus.us', 'PB social gram pull', print_r(json_encode($data_source), true));
 
         $is_instagram_poller = isset($data_source['source']) && $data_source['source'] == 'instagram_poller';
         $is_instagram_native = isset($data_source['user']['username']) && isset($data_source['images']['standard_resolution']['url']);
@@ -130,8 +171,11 @@
                 $target_user = get_users(array('meta_key' => '_sp2016_twitter_handle', 'meta_value' => $user));
                 $target_user = reset($target_user);
 
-                // no user? Default to null
-                $target_user_id = $target_user ? $target_user->ID : null;
+                // no user?
+                if ( ! $target_user ){
+                    echo json_encode(array( 'error' => 'Specified user does not exist' ));
+                    exit;
+                }
 
                 // set social media status and custom image
                 $meta_args['_custom_social_status'] = $type;
@@ -139,7 +183,7 @@
                 $meta_args['_custom_external_url'] = $data_source['url'];
 
                 // set args for post
-                $args['post_author'] = $target_user_id;
+                $args['post_author'] = $target_user->ID;
                 $args['post_content'] = $data_source['text'];
                 $args['post_title'] = 'Tweet: ' . substr($data_source['text'], 0, 35) . '...';
                 $args['post_category'] = array($target_user->_sp2016_cat_id);
@@ -166,8 +210,11 @@
                 $target_user = get_users(array('meta_key' => '_sp2016_facebook_id', 'meta_value' => $data_source['from__id']));
                 $target_user = reset($target_user);
 
-                // no user? Default to null
-                $target_user_id = $target_user ? $target_user->ID : null;
+                // no user?
+                if ( ! $target_user ){
+                    echo json_encode(array( 'error' => 'Specified user does not exist' ));
+                    exit;
+                }
 
                 // set social media status and custom image
                 $meta_args['_custom_social_status'] = $type;
@@ -175,7 +222,7 @@
                 $meta_args['_custom_external_url'] = $data_source['link'];
 
                 // set args for post
-                $args['post_author'] = $target_user_id;
+                $args['post_author'] = $target_user->ID;
                 $args['post_content'] = $data_source['message'];
                 $args['post_title'] = substr($data_source['message'], 0, 45) . '...';
                 $args['post_category'] = array($target_user->_sp2016_cat_id);
@@ -241,14 +288,14 @@
                 $meta_args['_custom_external_url'] = $data_source['link'];
 
                 // set args for post
-                $args['post_author'] = $target_user_id;
-                $args['post_content'] = $data_source['caption']['text'];
+                $args['post_author'] = $target_user->ID;
+                $args['post_content'] = $data_source['caption'];
                 $args['post_title'] = 'Gram: ' . $data_source['id'];
                 $args['post_category'] = array($target_user->_sp2016_cat_id);
                 $args['meta_input'] = $meta_args;
 
                 // if caption wasn't found, try a different key
-                if ( empty($args['post_content']) && isset($data_source['caption']) ) $args['post_content'] = $data_source['caption']['text'];
+                if ( empty($args['post_content']) && isset($data_source['caption']) ) $args['post_content'] = $data_source['caption'];
 
                 // create post
                 $success = wp_insert_post($args);
